@@ -37,3 +37,35 @@ Notification is async because email failures shouldn't block task creation.
 - TaskForge: User SQLAlchemy model + first Alembic migration
 - DSA: Container With Most Water + 3Sum (with full walkthroughs)
 - Recall question: "When would I choose AP over CP, and vice versa?"
+
+## Day 2 — May 2, 2026
+
+### Top concepts I learned today
+- CAP theorem: during a network partition you must choose Consistency or Availability (scored 7-8/8 on the quiz)
+- PACELC: even without partitions, you trade Latency vs Consistency
+- TaskForge.AI mixes models on purpose — Postgres (CP) + Redis (AP) + Kafka (eventual)
+- SQLAlchemy 2.0 with Mapped[] syntax + async sessions
+- Alembic migrations turn Python models into real Postgres tables
+- Alembic async template needs the +asyncpg driver in the URL (not psycopg2)
+- Two-pointer pattern: Container With Most Water + 3Sum (sort, fix one, two-pointer the rest)
+
+### Hardest part of today
+- 3Sum was tough — the duplicate-skipping logic took a while to click. Also it is not same as 2Sum problem, little bit trickier and difficult to understand the problem and its conditions.
+- Container with Most Water - The logic to find the best container with most water was difficult.
+
+### One thing I'm proud of
+- Near-perfect CAP score
+- Got the async Alembic migration working after the psycopg2 error
+- Was able to think about the logic behind for Container with Most Water problem.
+
+### One question I'd want an interviewer to ask me right now
+- "Why did you mix Postgres and Redis in your project?" (CAP answer ready)
+- "Could you please explain me each and every CAP models you have used for your projects?"
+
+### What I'd do differently
+- "I need to spend some more time dry-running 3Sum on paper before coding"
+
+### Tomorrow's preview
+- System Design Lesson 3: Database scaling — vertical, read replicas, sharding
+- TaskForge: Implement the /auth/register endpoint with real password hashing
+- DSA: Reverse Linked List + Linked List Cycle Detection
