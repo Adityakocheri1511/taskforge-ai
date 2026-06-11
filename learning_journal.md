@@ -69,3 +69,27 @@ Notification is async because email failures shouldn't block task creation.
 - System Design Lesson 3: Database scaling — vertical, read replicas, sharding
 - TaskForge: Implement the /auth/register endpoint with real password hashing
 - DSA: Reverse Linked List + Linked List Cycle Detection
+
+## Day 3 — June 11, 2026
+
+### Top concepts I learned today
+- The scaling ladder: diagnose/index → pooling → cache → vertical → read replicas → shard (LAST)
+- Replication lag and the read-your-writes problem
+- Shard by the boundary your queries respect (workspace_id for TaskForge)
+- Built /auth/register: bcrypt hashing, Pydantic schemas, repository pattern
+- Why bcrypt directly instead of passlib (unmaintained, breaks with bcrypt 4+)
+- Linked list patterns: three-pointer reversal + Floyd's tortoise & hare
+
+### Hardest part of today
+To understand the how database scaling works, how and when sharding is been used for reads and writes, what is mean by replicas.
+
+### One thing I'm proud of
+Seeing the $2b$12$ bcrypt hash in Postgres for a user I registered through my own API
+
+### What I'd do differently
+Focus more on DSA Topics and make my foundation strong.
+
+### Tomorrow's preview (Day 4)
+- System Design: Indexes deep-dive — B-trees, composite, covering, EXPLAIN ANALYZE hands-on
+- TaskForge: /auth/login + JWT issuance (access + refresh tokens)
+- DSA: Merge Two Sorted Lists + LRU Cache
