@@ -22,6 +22,12 @@ class Settings(BaseSettings):
         "postgresql://taskforge:taskforge_dev_password@localhost:5432/taskforge"
     )
 
+    # JWT
+    JWT_SECRET_KEY: str = "dev-secret-change-me-run-openssl-rand-hex-32"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

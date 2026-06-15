@@ -21,7 +21,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from app.db.base import Base
-from app.models import User  # Import all models so Alembic sees them
+from app.models import User, RefreshToken  # noqa: F401  # Import all models so Alembic sees them
 
 target_metadata = Base.metadata
 
