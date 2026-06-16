@@ -93,3 +93,27 @@ Focus more on DSA Topics and make my foundation strong.
 - System Design: Indexes deep-dive — B-trees, composite, covering, EXPLAIN ANALYZE hands-on
 - TaskForge: /auth/login + JWT issuance (access + refresh tokens)
 - DSA: Merge Two Sorted Lists + LRU Cache
+
+## Day 4 — June 15, 2026
+
+### Top concepts I learned today
+- Indexes: B-tree O(log n), composite leftmost-prefix rule, covering indexes, write-cost trade-off
+- Saw EXPLAIN ANALYZE flip Seq Scan → Index Scan on my own users table
+- Built /auth/login with bcrypt verification + JWT access/refresh tokens
+- Refresh token rotation: old token revoked, new issued, all in one transaction
+- Refresh tokens stored as SHA-256 (deterministic → lookupable), not bcrypt
+- DSA: dummy-head merge + LRU cache (hash map + ordering = O(1))
+
+### Hardest part of today
+- Debugging the auth chain: a file got overwritten instead of appended, then a missing migration, then a duplicate migration. Learned to read the traceback's last line and trust `python -c` over VS Code highlighting.
+
+### One thing I'm proud of
+- Watched token rotation work end-to-end in my own logs (401 then 200, revoke + issue)
+
+### What I'd do differently
+- Generate a migration and apply it immediately (generate → upgrade head → verify), so duplicates can't pile up
+
+### Tomorrow's preview (Day 5)
+- System Design: Transactions, isolation levels, MVCC, deadlocks
+- TaskForge: protect routes with a get_current_user JWT dependency + GET /auth/me
+- DSA: Valid Parentheses + Min Stack
