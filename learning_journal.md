@@ -117,3 +117,28 @@ Focus more on DSA Topics and make my foundation strong.
 - System Design: Transactions, isolation levels, MVCC, deadlocks
 - TaskForge: protect routes with a get_current_user JWT dependency + GET /auth/me
 - DSA: Valid Parentheses + Min Stack
+
+## Day 5 — June 16, 2026
+
+### Top concepts I learned today
+- ACID isolation; the 3 read anomalies: dirty / non-repeatable / phantom
+- The 4 isolation levels and which anomaly each prevents (SERIALIZABLE = all)
+- Postgres default is READ COMMITTED; MVCC = readers don't block writers
+- Optimistic vs pessimistic locking; deadlocks avoided by consistent lock ordering
+- Built get_current_user JWT dependency + protected GET /auth/me
+- Checking token "type" == access stops a refresh token being used as an access token
+- DSA: stacks — Valid Parentheses (LIFO matching) + Min Stack (parallel mins stack for O(1) getMin)
+
+### Hardest part of today
+There was nothing as such hardest thing which I have done today, Apart from DSA I need to practice more regarding the questions.
+
+### One thing I'm proud of
+The full loop working: register → login → Authorize in Swagger → /me returns my profile, while unauthenticated requests get 401
+
+### What I'd do differently
+Today was actually easy day, where I got to learn the things in one go.
+
+### Tomorrow's preview (Day 6)
+- System Design: Monolith vs Microservices — service boundaries, when to split
+- TaskForge: start the Task service (workspaces, projects, tasks models)
+- DSA: Binary Search + Search in Rotated Sorted Array
