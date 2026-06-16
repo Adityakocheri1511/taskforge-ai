@@ -12,6 +12,8 @@ from app.db.session import get_db
 from app.repositories.token_repository import TokenRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas import UserCreate, UserRead, LoginRequest, TokenResponse, RefreshRequest
+from app.api.deps import get_current_user
+from app.models import User
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -73,3 +75,8 @@ async def refresh(payload: RefreshRequest, db: AsyncSession = Depends(get_db)) -
     await token_repo.store(user_id=stored.user_id, token_hash=hash_token(new_refresh), expires_at=expires_at)
 
     return TokenResponse(access_token=access, refresh_token=new_refresh)
+
+@router.get("/me", response_model=UserRead)
+async def me(current_user: User = Depends(get_current_user)) -> UserRead:
+    """Return the currently authenticated user. Requires a valid access token."""
+    return current_user
