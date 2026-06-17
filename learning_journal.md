@@ -142,3 +142,29 @@ Today was actually easy day, where I got to learn the things in one go.
 - System Design: Monolith vs Microservices — service boundaries, when to split
 - TaskForge: start the Task service (workspaces, projects, tasks models)
 - DSA: Binary Search + Search in Rotated Sorted Array
+
+## Day 6 — June 17, 2026
+
+### Top concepts I learned today
+- Microservices = organizational/operational trade-off, NOT a technical upgrade
+- Draw boundaries by business capability + failure domain, never by technical layer
+- Anti-patterns: distributed monolith, premature microservices, shared database
+- Database-per-service: each service owns its data; no FK across service boundaries
+- Conway's Law: architecture mirrors org communication structure
+- Built the Task service with its OWN database (taskforge_tasks)
+- user-referencing columns (owner_id, assignee_id, created_by) are plain UUIDs — no FK across services
+- DSA: binary search + search in rotated array (one half is always sorted)
+
+### Hardest part of today
+Today the hardest part was to learn the Search in Rotated Array, I have solved this question before but couldn't able to get the intuition. So I will be practising DSA more.
+
+### One thing I'm proud of
+Today I felt somewhere I was able to fill the gap(not fully) which I was lacking in the Deloitte's interview. Another thing got the intuition for Binary Search problem and was able to solve the question.
+
+### What I'd do differently
+Today I was able to understand how Monolith and Microservices architecture works in various systems and their Trade-offs.
+
+### Tomorrow's preview (Day 7)
+- System Design: API design (REST vs GraphQL vs gRPC) + status codes / versioning
+- TaskForge: Task service CRUD endpoints (create workspace, project, task) + schemas/repositories
+- DSA: two more (TBD)
