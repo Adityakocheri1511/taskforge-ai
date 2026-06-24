@@ -1,10 +1,18 @@
 from fastapi import FastAPI
 
+from app.api.v1.workspaces import router as workspaces_router
+from app.api.v1.projects import router as projects_router
+from app.api.v1.tasks import router as tasks_router
+
 app = FastAPI(
     title="TaskForge.AI Task Service",
     version="0.1.0",
     description="Workspaces, projects, and tasks for TaskForge.AI",
 )
+
+app.include_router(workspaces_router)
+app.include_router(projects_router)
+app.include_router(tasks_router)
 
 
 @app.get("/health")
