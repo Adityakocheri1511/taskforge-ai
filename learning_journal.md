@@ -168,3 +168,29 @@ Today I was able to understand how Monolith and Microservices architecture works
 - System Design: API design (REST vs GraphQL vs gRPC) + status codes / versioning
 - TaskForge: Task service CRUD endpoints (create workspace, project, task) + schemas/repositories
 - DSA: two more (TBD)
+
+## Day 7 — June 24, 2026
+
+### Top concepts I learned today
+- REST (resources + verbs) vs GraphQL (client-picked fields) vs gRPC (binary, internal)
+- Status codes: 201 created, 401/403 auth, 404, 409 conflict, 422 validation
+- Idempotency: GET/PUT/DELETE idempotent, POST is not
+- API versioning (/api/v1) lets you ship breaking changes without breaking clients
+- Built Task service CRUD: workspaces -> projects -> tasks (+ status filter, PATCH update)
+- Stateless cross-service auth: Task validates Auth's JWT with the shared key, NO users table
+- The (project_id, status) composite index powers the task list filter
+- DSA: sliding window (longest substring) + Kadane's (max subarray)
+
+### Hardest part of today
+Today I was trying to learn how two independent services(Auth and Task) work with each other with independent database. And also to understand how REST, GraphQL and gRPC are different from each other and their use cases as well.
+
+### One thing I'm proud of
+A token from Auth (8001) creating a workspace in Task (8002) — two services, one identity
+
+### What I'd do differently
+Nothing
+
+### Tomorrow's preview (Day 8)
+- System Design: Caching strategies (cache-aside, write-through) + Redis in practice
+- TaskForge: add Redis caching to the Task service's read endpoints
+- DSA: two more (trees incoming)
