@@ -10,7 +10,11 @@ class Settings(BaseSettings):
         "postgresql+asyncpg://taskforge:taskforge_dev_password@localhost:5432/taskforge_tasks"
     )
 
-    # JWT — MUST be identical to the Auth service so its tokens validate here.
+    # Redis cache (the tf-redis container from docker-compose)
+    REDIS_URL: str = "redis://localhost:6379/0"
+    CACHE_TTL_SECONDS: int = 60
+
+    # JWT — MUST match the Auth service
     JWT_SECRET_KEY: str = "dev-secret-change-me-run-openssl-rand-hex-32"
     JWT_ALGORITHM: str = "HS256"
 

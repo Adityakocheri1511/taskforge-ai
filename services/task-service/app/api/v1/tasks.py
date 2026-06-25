@@ -4,11 +4,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user_id
+from app.core.cache import cache_get, cache_set, cache_delete_pattern
 from app.db.session import get_db
 from app.repositories import ProjectRepository, TaskRepository
 from app.schemas import TaskCreate, TaskRead, TaskUpdate
 
 router = APIRouter(prefix="/api/v1", tags=["tasks"])
+
+
+def _tasks_key(project_id: UUID, status: str | None) -> str:
+    return f"tasks:project:{project_id}:status:{status or 'all'}"
 
 
 @router.post("/projects/{project_id}/tasks", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
@@ -20,7 +25,7 @@ async def create_task(
 ) -> TaskRead:
     if await ProjectRepository(db).get(project_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-    return await TaskRepository(db).create(
+    task = await TaskRepository(db).create(
         project_id=project_id,
         title=payload.title,
         description=payload.description,
@@ -28,16 +33,30 @@ async def create_task(
         assignee_id=payload.assignee_id,
         created_by=user_id,
     )
+    # delete-on-write: invalidate every cached list for this project
+    await cache_delete_pattern(f"tasks:project:{project_id}:*")
+    return task
 
 
 @router.get("/projects/{project_id}/tasks", response_model=list[TaskRead])
 async def list_tasks(
     project_id: UUID,
-    status: str | None = Query(default=None, description="Filter by status: todo/in_progress/done"),
+    status: str | None = Query(default=None, description="Filter: todo/in_progress/done"),
     user_id: UUID = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    return await TaskRepository(db).list_for_project(project_id, status=status)
+    key = _tasks_key(project_id, status)
+
+    cached = await cache_get(key)
+    if cached is not None:
+        print(f"CACHE HIT  {key}")
+        return cached
+
+    print(f"CACHE MISS {key}")
+    tasks = await TaskRepository(db).list_for_project(project_id, status=status)
+    payload = [TaskRead.model_validate(t).model_dump(mode="json") for t in tasks]
+    await cache_set(key, payload)
+    return payload
 
 
 @router.patch("/tasks/{task_id}", response_model=TaskRead)
@@ -51,7 +70,7 @@ async def update_task(
     task = await repo.get(task_id)
     if task is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
-    return await repo.update(
+    updated = await repo.update(
         task,
         title=payload.title,
         description=payload.description,
@@ -59,3 +78,5 @@ async def update_task(
         priority=payload.priority,
         assignee_id=payload.assignee_id,
     )
+    await cache_delete_pattern(f"tasks:project:{updated.project_id}:*")
+    return updated
