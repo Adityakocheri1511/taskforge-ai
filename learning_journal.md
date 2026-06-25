@@ -194,3 +194,29 @@ Nothing
 - System Design: Caching strategies (cache-aside, write-through) + Redis in practice
 - TaskForge: add Redis caching to the Task service's read endpoints
 - DSA: two more (trees incoming)
+
+## Day 8 — June 25, 2026
+
+### Top concepts I learned today
+- Four caching patterns: cache-aside, read-through, write-through, write-behind
+- Cache-aside is the default: app checks cache, miss -> DB -> populate
+- Invalidation = the hard part: TTL expiry + delete-on-write, usually combined
+- Cache stampede / thundering herd and how to mitigate it
+- What to cache (read-often, change-rarely) vs not (per-request, sensitive)
+- Wired Redis cache-aside into Task service GET /tasks; delete-on-write on create/update
+- Proof: a cache HIT shows NO SQL query in the logs — the read never touches Postgres
+- DSA: binary trees — max depth + invert (recursion: solve children, then combine)
+
+### Hardest part of today
+Today I felt hard to understand how caching works actually and how there are different forms of caching based on the different applications.
+
+### One thing I'm proud of
+Today the DSA problems were easy, Yes I had lost some grip on trees but will work on the topics of trees.
+
+### What I'd do differently
+Nothing
+
+### Tomorrow's preview (Day 9)
+- System Design: Message queues + async processing (RabbitMQ, work queues, ack/retry)
+- TaskForge: stand up the Notification service consuming from RabbitMQ
+- DSA: more trees — BFS level-order + a BST check
