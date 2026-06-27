@@ -220,3 +220,31 @@ Nothing
 - System Design: Message queues + async processing (RabbitMQ, work queues, ack/retry)
 - TaskForge: stand up the Notification service consuming from RabbitMQ
 - DSA: more trees — BFS level-order + a BST check
+
+## Day 9 — June 27, 2026
+
+### Top concepts I learned today
+- Sync vs async: a queue decouples producer and consumer so neither blocks the other
+- Producer / queue / consumer / broker; RabbitMQ routes via exchanges + bindings
+- Exchange types: direct, topic (wildcards), fanout (broadcast), headers
+- Acks drive reliability -> at-least-once delivery -> consumers must be idempotent
+- Durable queue + persistent messages survive consumer downtime (saw the backlog drain)
+- Poison messages -> dead-letter queue after N retries; prefetch = backpressure
+- Built the Notification service as a RabbitMQ consumer; Task service publishes task.created
+- Publish is best-effort today (try/except) -> the outbox pattern (Day 10) makes it reliable
+- DSA: trees — level-order BFS (queue per level) + validate BST (carry low/high bounds)
+
+### Hardest part of today
+I didn't felt anything hard to understand today.
+
+### One thing I'm proud of
+Today I got a chance to see how services work by their own without any external intervention just like stopping the consumer, creating tasks, and watching the backlog drain on restart.
+
+### What I'd do differently
+Nothing.
+
+### Tomorrow's preview (Day 10)
+- System Design: Kafka vs RabbitMQ + the Outbox pattern (reliable event publishing)
+- TaskForge: Analytics service consuming Kafka events; outbox in the Task service
+- DSA: two more — likely heaps / a graph intro
+- THEN: first mock interview on Sunday (Product/PBC flavor)
