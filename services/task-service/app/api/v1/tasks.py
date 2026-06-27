@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user_id
 from app.core.cache import cache_get, cache_set, cache_delete_pattern
+from app.core.events import publish_event
 from app.db.session import get_db
 from app.repositories import ProjectRepository, TaskRepository
 from app.schemas import TaskCreate, TaskRead, TaskUpdate
@@ -33,8 +34,21 @@ async def create_task(
         assignee_id=payload.assignee_id,
         created_by=user_id,
     )
-    # delete-on-write: invalidate every cached list for this project
     await cache_delete_pattern(f"tasks:project:{project_id}:*")
+
+    # Best-effort async event — must NOT break task creation if the broker is down.
+    # (Making this reliable is the outbox pattern — tomorrow, Day 10.)
+    try:
+        await publish_event("task.created", {
+            "event": "task.created",
+            "task_id": str(task.id),
+            "project_id": str(project_id),
+            "title": task.title,
+            "created_by": str(user_id),
+        })
+    except Exception as exc:
+        print(f"⚠️  Failed to publish task.created: {exc}")
+
     return task
 
 
@@ -46,7 +60,6 @@ async def list_tasks(
     db: AsyncSession = Depends(get_db),
 ):
     key = _tasks_key(project_id, status)
-
     cached = await cache_get(key)
     if cached is not None:
         print(f"CACHE HIT  {key}")
