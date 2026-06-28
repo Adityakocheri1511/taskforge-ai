@@ -1,3 +1,4 @@
+import json
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -5,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user_id
 from app.core.cache import cache_get, cache_set, cache_delete_pattern
-from app.core.events import publish_event
 from app.db.session import get_db
+from app.models import OutboxEvent
 from app.repositories import ProjectRepository, TaskRepository
 from app.schemas import TaskCreate, TaskRead, TaskUpdate
 
@@ -26,6 +27,7 @@ async def create_task(
 ) -> TaskRead:
     if await ProjectRepository(db).get(project_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
     task = await TaskRepository(db).create(
         project_id=project_id,
         title=payload.title,
@@ -34,21 +36,21 @@ async def create_task(
         assignee_id=payload.assignee_id,
         created_by=user_id,
     )
-    await cache_delete_pattern(f"tasks:project:{project_id}:*")
 
-    # Best-effort async event — must NOT break task creation if the broker is down.
-    # (Making this reliable is the outbox pattern — tomorrow, Day 10.)
-    try:
-        await publish_event("task.created", {
+    # OUTBOX: write the event in the SAME transaction as the task.
+    # get_db() commits both together — atomic. No dual-write gap.
+    db.add(OutboxEvent(
+        event_type="task.created",
+        payload=json.dumps({
             "event": "task.created",
             "task_id": str(task.id),
             "project_id": str(project_id),
             "title": task.title,
             "created_by": str(user_id),
-        })
-    except Exception as exc:
-        print(f"⚠️  Failed to publish task.created: {exc}")
+        }),
+    ))
 
+    await cache_delete_pattern(f"tasks:project:{project_id}:*")
     return task
 
 

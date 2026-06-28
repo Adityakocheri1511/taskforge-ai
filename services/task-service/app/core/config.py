@@ -15,6 +15,8 @@ class Settings(BaseSettings):
 
     RABBITMQ_URL: str = "amqp://taskforge:taskforge_dev_password@localhost:5672/"
 
+    KAFKA_BOOTSTRAP: str = "localhost:9092"
+
     JWT_SECRET_KEY: str = "dev-secret-change-me-run-openssl-rand-hex-32"
     JWT_ALGORITHM: str = "HS256"
 

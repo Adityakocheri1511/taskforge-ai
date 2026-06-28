@@ -1,0 +1,20 @@
+[project]
+name = "analytics-service"
+version = "0.1.0"
+description = "TaskForge.AI Analytics Service - consumes task events from Kafka"
+requires-python = ">=3.11"
+dependencies = [
+    "aiokafka>=0.10.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.2.0",
+]
+
+[project.optional-dependencies]
+dev = ["ruff>=0.2.0"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app"]
