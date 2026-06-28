@@ -248,3 +248,38 @@ Nothing.
 - TaskForge: Analytics service consuming Kafka events; outbox in the Task service
 - DSA: two more — likely heaps / a graph intro
 - THEN: first mock interview on Sunday (Product/PBC flavor)
+
+## Day 10 — June 28, 2026
+
+### Top concepts I learned today
+- Kafka vs RabbitMQ: log (retained, replayable, consumer groups) vs queue (consumed once)
+- Kafka consumer groups: many services each read the FULL stream independently
+- Retention enables replay — a new consumer can re-read history from offset 0
+- The dual-write problem: DB commit + broker publish aren't atomic -> events can be lost
+- The OUTBOX pattern: write the event to an outbox table in the SAME transaction as
+  the data; a relay publishes unpublished rows to Kafka and marks them sent
+- At-least-once -> idempotent consumers; CDC/Debezium as the log-tailing alternative
+- Built: outbox table + atomic write, an outbox relay, and the Analytics service (4th!)
+- Saw reliability: relay down -> events wait safely in the outbox -> drain on restart
+- DSA: heaps (Kth Largest, min-heap of size k) + graphs (Number of Islands, flood-fill)
+
+### Hardest part of today
+Running the full pipeline across 4 terminals at once (auth, task service, relay,
+analytics) and keeping track of what each one was doing. The idea that the outbox
+row and the task INSERT commit together in one transaction took a moment to really
+click — that atomicity is the whole point of the pattern.
+
+### One thing I'm proud of
+I built the outbox pattern end to end — a genuinely senior-level reliability technique.
+Watching an event survive the relay being down (waiting safely in the outbox, then
+draining to Kafka on restart) made "no lost events" feel real instead of theoretical.
+
+### What I'd do differently
+Spend a bit more time on Kafka offsets and consumer groups — I want to be able to
+explain the replay demo (new group_id re-reading from the start) cleanly in an interview,
+not just run it.
+
+### The foundation arc is COMPLETE 🎉
+- 4 microservices, sync (JWT) + async (RabbitMQ) + streaming (Kafka outbox) comms
+- 10 system-design topics, ~20 DSA problems across all the core patterns
+- Next: first mock interview, then AI service -> frontend -> deploy
