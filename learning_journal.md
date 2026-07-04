@@ -283,3 +283,32 @@ not just run it.
 - 4 microservices, sync (JWT) + async (RabbitMQ) + streaming (Kafka outbox) comms
 - 10 system-design topics, ~20 DSA problems across all the core patterns
 - Next: first mock interview, then AI service -> frontend -> deploy
+
+## Day 11 — June 29, 2026
+
+### Top concepts I learned today
+- Embeddings: text -> vectors where similar MEANING = nearby vectors
+- Semantic search matches meaning, not keywords ("auth problem" -> "fix login bug", score 0.71)
+- Cosine similarity = angle between vectors; the standard text similarity metric
+- Vector databases (Qdrant) store embeddings + do fast nearest-neighbor search
+- Brute force is O(n); ANN indexes like HNSW make it ~log time at scale
+- RAG = retrieve relevant context via vector search -> feed to LLM -> grounded answer
+- Built the AI service: fastembed (local ONNX, no API key) + Qdrant + /index and /search
+- Wired the Kafka auto-indexer (group=ai-indexer): task -> outbox -> relay -> Kafka ->
+  Analytics AND AI indexer, two consumer groups on one stream, both firing on one task
+- Debugging: qdrant-client renamed .search() -> .query_points() between versions;
+  read the traceback and adapted. Library APIs drift — tutorials go stale.
+
+### Hardest part of today
+The Qdrant container missing from docker-compose.yml, later I fixed it and I could able to run the ai-service.
+
+### One thing I'm proud of
+Searching "authentication problem" and getting "fix login bug" back at 0.71 with zero shared words — and watching one task auto-index across the whole pipeline
+
+### What I'd do differently
+Nothing.
+
+### ALL FIVE SERVICES ARE BUILT 🎉
+- Auth, Task, Notification, Analytics, AI — full microservices system, verified live
+- sync (JWT) + async (RabbitMQ) + streaming (Kafka outbox) + vector search (Qdrant)
+- Next: first mock (Sun Jul 5), then frontend -> deployment
