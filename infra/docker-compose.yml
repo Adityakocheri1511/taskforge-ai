@@ -32,8 +32,8 @@ services:
       RABBITMQ_DEFAULT_USER: taskforge
       RABBITMQ_DEFAULT_PASS: taskforge_dev_password
     ports:
-      - "5672:5672"     # AMQP
-      - "15672:15672"   # Management UI
+      - "5672:5672"
+      - "15672:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -69,5 +69,15 @@ services:
     depends_on:
       - kafka
 
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: tf-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
 volumes:
   postgres_data:
+  qdrant_data:
