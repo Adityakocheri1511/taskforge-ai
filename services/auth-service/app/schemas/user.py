@@ -35,3 +35,9 @@ class TokenResponse(BaseModel):
 
 class RefreshRequest(BaseModel):
     refresh_token: str
+
+
+class AccessTokenResponse(BaseModel):
+    """Login/refresh response — the refresh token travels in an httpOnly cookie, not here."""
+    access_token: str
+    token_type: str = "bearer"
