@@ -312,3 +312,37 @@ Nothing.
 - Auth, Task, Notification, Analytics, AI — full microservices system, verified live
 - sync (JWT) + async (RabbitMQ) + streaming (Kafka outbox) + vector search (Qdrant)
 - Next: first mock (Sun Jul 5), then frontend -> deployment
+
+## Day 12 — July 18, 2026
+
+### Top concepts I learned today
+- SPA vs SSR vs SSG; SPA fits TaskForge (behind login -> SEO irrelevant, static hosting)
+- JWT storage trade-offs: localStorage (XSS-readable) vs httpOnly cookie (JS-invisible,
+  needs CSRF care) vs in-memory (safest, lost on reload)
+- Chose the production hybrid: refresh token in an httpOnly SameSite=Lax cookie scoped
+  to /api/v1/auth; short-lived access token in memory, sent as a Bearer header
+- Why NOT the access token in a cookie too: Bearer headers work across all five services
+  regardless of domain; cookies are domain-scoped and need CSRF tokens everywhere.
+  Full-cookie auth becomes natural once everything sits behind one gateway origin.
+- Logout must revoke server-side, not just clear the cookie — otherwise the token row
+  stays valid in the DB and a captured token keeps working
+- The 401 -> refresh -> retry interceptor is what makes 15-minute tokens usable
+- CORS with credentials requires an explicit origin — "*" is rejected by the browser
+- Built: React+TS via Vite, axios client with cookie auth + refresh interceptor,
+  AuthContext, login/register page, protected routes — real end-to-end auth
+- Verified with curl: set-cookie carries HttpOnly + Path + Max-Age, the response body
+  contains NO refresh token, and refresh rotates to a brand-new cookie value
+
+### Hardest part of today
+The schema export ImportError and merging the cookie logic into auth.py.
+
+### One thing I'm proud of
+Building auth the way a real company would instead of the tutorial shortcut — and seeing the HttpOnly flag prove it in the response headers
+
+### One question I'd want an interviewer to ask me right now
+"Where do you store the JWT on the client, and what are the trade-offs?"
+
+### Tomorrow's preview (Day 13)
+- Frontend session 2: workspaces + projects + tasks UI wired to the Task service
+- Semantic search box calling the AI service
+- DSA: backtracking (Subsets + Permutations) — deferred twice now, let's clear it
