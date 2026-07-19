@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { Button, Input } from "../components/ui";
 
 export default function Login() {
   const { login, register } = useAuth();
@@ -19,40 +20,45 @@ export default function Login() {
       else await login(email, password);
       navigate("/dashboard");
     } catch (e: any) {
-      setError(e.response?.data?.detail ?? "Something went wrong");
+      setError(e.response?.data?.detail ?? "That didn't work. Check your details and try again.");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: 380, margin: "80px auto", fontFamily: "system-ui" }}>
-      <h1>TaskForge.AI</h1>
-      <h2 style={{ fontSize: 18, fontWeight: 400 }}>
-        {isRegister ? "Create an account" : "Sign in"}
-      </h2>
+    <div className="min-h-screen flex items-center justify-center px-6">
+      <div className="w-full max-w-[340px]">
+        <h1 className="text-2xl font-semibold text-center">TaskForge</h1>
+        <p className="mt-2 mb-10 text-center text-sm text-muted">
+          {isRegister ? "Create your account." : "Sign in to continue."}
+        </p>
 
-      <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
-        style={{ width: "100%", padding: 10, marginBottom: 10 }} />
-      {isRegister && (
-        <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)}
-          style={{ width: "100%", padding: 10, marginBottom: 10 }} />
-      )}
-      <input placeholder="Password" type="password" value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        style={{ width: "100%", padding: 10, marginBottom: 10 }} />
+        <div className="space-y-3">
+          <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          {isRegister && (
+            <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+          )}
+          <Input
+            placeholder="Password" type="password" value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submit()}
+          />
+        </div>
 
-      {error && <p style={{ color: "crimson" }}>{error}</p>}
+        {error && <p className="mt-3 text-sm text-danger">{error}</p>}
 
-      <button onClick={submit} disabled={busy} style={{ width: "100%", padding: 10 }}>
-        {busy ? "Please wait…" : isRegister ? "Register" : "Sign in"}
-      </button>
+        <Button onClick={submit} disabled={busy} className="mt-6 w-full">
+          {busy ? "One moment…" : isRegister ? "Create account" : "Sign in"}
+        </Button>
 
-      <p style={{ marginTop: 14, fontSize: 14 }}>
-        <a href="#" onClick={(e) => { e.preventDefault(); setIsRegister(!isRegister); }}>
-          {isRegister ? "Already have an account? Sign in" : "Need an account? Register"}
-        </a>
-      </p>
+        <button
+          onClick={() => setIsRegister(!isRegister)}
+          className="mt-6 w-full text-sm text-accent hover:underline"
+        >
+          {isRegister ? "Already have an account? Sign in" : "New here? Create an account"}
+        </button>
+      </div>
     </div>
   );
 }
