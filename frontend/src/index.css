@@ -1,31 +1,50 @@
 @import "tailwindcss";
 
+/* ============================================================
+   TaskForge design tokens
+   Every colour, size and radius in the app derives from here.
+   Warm neutrals (forge) + one ember accent reserved for actions.
+   ============================================================ */
+
 @theme {
-  /* Palette — near-monochrome, one accent reserved for actions */
-  --color-canvas:   #F5F5F7;   /* page background */
-  --color-surface:  #FFFFFF;   /* cards, panels */
-  --color-ink:      #1D1D1F;   /* primary text */
-  --color-muted:    #6E6E73;   /* secondary text */
-  --color-hairline: #D2D2D7;   /* borders */
-  --color-accent:   #0071E3;   /* actions only */
-  --color-danger:   #D70015;
+  /* Surfaces â€” warm, not the cold grey every dashboard uses */
+  --color-canvas:    #FAFAF9;
+  --color-surface:   #FFFFFF;
+  --color-raised:    #F5F5F4;
 
-  /* Type — SF Pro on Apple devices, Inter elsewhere */
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter,
-               system-ui, sans-serif;
+  /* Ink */
+  --color-ink:       #1C1917;
+  --color-muted:     #78716C;
+  --color-faint:     #A8A29E;
+  --color-hairline:  #E7E5E4;
 
-  /* Scale: 6 sizes, nothing in between */
+  /* Ember â€” actions only. Never decoration. */
+  --color-ember:     #DC5A11;
+  --color-ember-hi:  #EA6C1F;
+  --color-ember-dim: #FEF0E7;
+
+  /* Status */
+  --color-done:      #15803D;
+  --color-active:    #B45309;
+  --color-danger:    #B91C1C;
+
+  /* Type */
+  --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans:    Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
   --text-xs:   0.75rem;
   --text-sm:   0.875rem;
   --text-base: 1rem;
   --text-lg:   1.25rem;
   --text-xl:   1.75rem;
   --text-2xl:  2.5rem;
+  --text-3xl:  3.5rem;
 
-  /* Generous, soft radii */
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 }
 
 @layer base {
@@ -36,13 +55,20 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Large type gets tight tracking — the single most "Apple" typographic move */
-  h1, h2 { letter-spacing: -0.022em; }
+  /* Tight tracking on large type â€” the single most effective typographic move */
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+  }
 
-  /* Visible keyboard focus, everywhere, for free */
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-ember);
     outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-ember-dim);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -50,5 +76,27 @@
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }
+  }
+}
+
+@layer utilities {
+  /* Ember only ever appears as a thin heat line, never a filled block */
+  .heat-line {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-ember) 35%,
+      var(--color-ember-hi) 65%,
+      transparent
+    );
+  }
+
+  .rise {
+    animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 }
