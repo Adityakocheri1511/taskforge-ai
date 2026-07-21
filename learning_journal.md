@@ -346,3 +346,25 @@ Building auth the way a real company would instead of the tutorial shortcut — 
 - Frontend session 2: workspaces + projects + tasks UI wired to the Task service
 - Semantic search box calling the AI service
 - DSA: backtracking (Subsets + Permutations) — deferred twice now, let's clear it
+
+## Day 13 — July 19, 2026
+
+### Top concepts I learned today
+- Design tokens: named values replacing hardcoded literals; change once, changes everywhere
+- Semantic naming (color-danger) survives redesigns; literal naming (color-red) becomes a lie
+- Constrained type scale (5-6 sizes) + spacing rhythm (4/8px base) = deliberate, calm UI
+- The Apple direction is subtraction: type carries hierarchy, near-monochrome, one accent
+  reserved for ACTIONS, generous whitespace, soft radii, quiet motion
+- Accessibility as baseline: 4.5:1 contrast, visible :focus-visible, prefers-reduced-motion
+- Empty/loading/error states are what separate a product from a demo
+- Built: Tailwind v4 @theme tokens, a primitive component library, workspace/project/task
+  UI, and a semantic search panel with a confidence bar making cosine similarity visible
+
+### Hardest part of today
+Today I felt hard that I was little bit lacking in Frontend end part which I need to work on more.
+
+### One thing I'm proud of
+Today I felt like I could see all the 5 microservices working simultaneously.
+
+### Tomorrow's preview (Day 14)
+- Deployment arc begins: production Dockerfiles + docker-compose for the full stack
