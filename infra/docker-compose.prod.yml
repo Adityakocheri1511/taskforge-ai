@@ -1,0 +1,228 @@
+# ==============================================================
+# TaskForge.AI — full stack, one command.
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Note the hostnames throughout: services reach each other by
+# SERVICE NAME (postgres, redis, kafka), never localhost.
+# ==============================================================
+
+name: taskforge
+
+services:
+  # ---------------- Infrastructure ----------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: tf-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: taskforge
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: tf-redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: tf-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "15672:15672"   # management UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      retries: 10
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: tf-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    healthcheck:
+      test: ["CMD-SHELL", "echo ruok | nc -w 2 localhost 2181"]
+      interval: 10s
+      retries: 10
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: tf-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Advertise the container hostname so other containers can reach it
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: tf-qdrant
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  # ---------------- Application services ----------------
+  auth-service:
+    build:
+      context: ../services/auth-service
+      dockerfile: Dockerfile
+    container_name: tf-auth
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taskforge
+      DATABASE_URL_SYNC: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taskforge
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DEBUG: "false"
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+
+  task-service:
+    build:
+      context: ../services/task-service
+      dockerfile: Dockerfile
+    container_name: tf-task
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taskforge_tasks
+      REDIS_URL: redis://redis:6379/0
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      KAFKA_BOOTSTRAP: kafka:9092
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DEBUG: "false"
+    ports:
+      - "8002:8000"
+    restart: unless-stopped
+
+  # Same image as task-service, different command — this is why
+  # building once and varying the entrypoint is worth doing.
+  outbox-relay:
+    build:
+      context: ../services/task-service
+      dockerfile: Dockerfile
+    container_name: tf-outbox-relay
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/taskforge_tasks
+      KAFKA_BOOTSTRAP: kafka:9092
+      DEBUG: "false"
+    command: ["python", "-m", "app.outbox_relay"]
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ../services/notification-service
+      dockerfile: Dockerfile
+    container_name: tf-notification
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+    restart: unless-stopped
+
+  analytics-service:
+    build:
+      context: ../services/analytics-service
+      dockerfile: Dockerfile
+    container_name: tf-analytics
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+    restart: unless-stopped
+
+  ai-service:
+    build:
+      context: ../services/ai-service
+      dockerfile: Dockerfile
+    container_name: tf-ai
+    depends_on:
+      - qdrant
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      KAFKA_BOOTSTRAP: kafka:9092
+    volumes:
+      - model_cache:/home/app/.cache
+    ports:
+      - "8003:8000"
+    restart: unless-stopped
+
+  ai-indexer:
+    build:
+      context: ../services/ai-service
+      dockerfile: Dockerfile
+    container_name: tf-ai-indexer
+    depends_on:
+      kafka:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      KAFKA_BOOTSTRAP: kafka:9092
+    volumes:
+      - model_cache:/home/app/.cache
+    command: ["python", "-m", "app.worker"]
+    restart: unless-stopped
+
+  # ---------------- Frontend ----------------
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        # Baked in at build time — these are the URLs the BROWSER uses,
+        # so they're host addresses, not container service names.
+        VITE_AUTH_URL: http://localhost:8001
+        VITE_TASK_URL: http://localhost:8002
+        VITE_AI_URL: http://localhost:8003
+    container_name: tf-frontend
+    depends_on:
+      - auth-service
+      - task-service
+      - ai-service
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  model_cache:

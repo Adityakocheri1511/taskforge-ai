@@ -10,6 +10,8 @@ class Settings(BaseSettings):
         "postgresql+asyncpg://taskforge:taskforge_dev_password@localhost:5432/taskforge_tasks"
     )
 
+    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+
     REDIS_URL: str = "redis://localhost:6379/0"
     CACHE_TTL_SECONDS: int = 60
 

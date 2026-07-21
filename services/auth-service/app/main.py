@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.auth import router as auth_router
+from app.core.config import settings
 
 app = FastAPI(
     title="TaskForge.AI Auth Service",
@@ -11,8 +12,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # explicit — never "*" with credentials
-    allow_credentials=True,                   # required for httpOnly cookies
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

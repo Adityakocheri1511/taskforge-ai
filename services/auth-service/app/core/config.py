@@ -22,6 +22,9 @@ class Settings(BaseSettings):
         "postgresql://taskforge:taskforge_dev_password@localhost:5432/taskforge"
     )
 
+    # Origins allowed to call this API from a browser
+    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    
     # JWT
     JWT_SECRET_KEY: str = "dev-secret-change-me-run-openssl-rand-hex-32"
     JWT_ALGORITHM: str = "HS256"

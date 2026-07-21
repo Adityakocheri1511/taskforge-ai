@@ -24,7 +24,6 @@ export default function AppShell() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState("");
   const [loading, setLoading] = useState(true);
-  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     listWorkspaces()
@@ -136,7 +135,7 @@ export default function AppShell() {
             />
           ) : (
             <>
-              <SearchPanel onBusyChange={setSearching} />
+              <SearchPanel/>
 
               <section className="mt-14">
                 <div className="flex flex-wrap items-center gap-4 border-b border-hairline pb-4">

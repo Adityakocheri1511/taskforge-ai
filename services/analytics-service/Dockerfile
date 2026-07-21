@@ -1,47 +1,34 @@
 # ==============================================================
-# Auth Service — production image
-# Multi-stage: build deps in a throwaway stage, ship only runtime.
+# Analytics Service — Kafka consumer worker (group: analytics)
 # ==============================================================
 
-# ---------- Stage 1: build ----------
 FROM python:3.11-slim AS builder
 
 WORKDIR /build
 
-# Build-only toolchain (never reaches the final image)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Dependencies first — this layer stays cached while only code changes
 COPY pyproject.toml ./
+# Install ONLY the dependencies, not the project itself — the app code
+# isn't here yet, and keeping it out is what preserves the layer cache.
 RUN python -c "import tomllib, pathlib; d = tomllib.loads(pathlib.Path('pyproject.toml').read_text()); pathlib.Path('requirements.txt').write_text('\n'.join(d['project']['dependencies']))" \
     && pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# ---------- Stage 2: runtime ----------
 FROM python:3.11-slim
 
-# Non-root user: a container escape lands here, not on host root
 RUN groupadd --system app && useradd --system --gid app --create-home app
 
 WORKDIR /app
 
-# Only the installed packages come across — no gcc, no headers
 COPY --from=builder /install /usr/local
-
 COPY --chown=app:app app ./app
-COPY --chown=app:app alembic ./alembic
-COPY --chown=app:app alembic.ini ./
 
 USER app
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-EXPOSE 8000
-
-HEALTHCHECK --interval=15s --timeout=3s --start-period=20s --retries=3 \
-    CMD python -c "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')" || exit 1
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "app.worker"]

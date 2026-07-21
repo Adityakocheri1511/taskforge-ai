@@ -4,6 +4,7 @@ from app.api.v1.workspaces import router as workspaces_router
 from app.api.v1.projects import router as projects_router
 from app.api.v1.tasks import router as tasks_router
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.config import settings
 
 app = FastAPI(
     title="TaskForge.AI Task Service",
@@ -12,7 +13,7 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

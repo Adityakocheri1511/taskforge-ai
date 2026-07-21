@@ -1,35 +1,29 @@
 # ==============================================================
-# Auth Service — production image
-# Multi-stage: build deps in a throwaway stage, ship only runtime.
+# Task Service — production image
+# The same image also runs the outbox relay; only the command differs,
+# which is why one build serves both the API and the worker.
 # ==============================================================
 
-# ---------- Stage 1: build ----------
 FROM python:3.11-slim AS builder
 
 WORKDIR /build
 
-# Build-only toolchain (never reaches the final image)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Dependencies first — this layer stays cached while only code changes
 COPY pyproject.toml ./
 RUN python -c "import tomllib, pathlib; d = tomllib.loads(pathlib.Path('pyproject.toml').read_text()); pathlib.Path('requirements.txt').write_text('\n'.join(d['project']['dependencies']))" \
     && pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# ---------- Stage 2: runtime ----------
 FROM python:3.11-slim
 
-# Non-root user: a container escape lands here, not on host root
 RUN groupadd --system app && useradd --system --gid app --create-home app
 
 WORKDIR /app
 
-# Only the installed packages come across — no gcc, no headers
 COPY --from=builder /install /usr/local
-
 COPY --chown=app:app app ./app
 COPY --chown=app:app alembic ./alembic
 COPY --chown=app:app alembic.ini ./

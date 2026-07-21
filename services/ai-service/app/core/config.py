@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     APP_NAME: str = "TaskForge.AI AI Service"
     APP_VERSION: str = "0.1.0"
 
+    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    
     QDRANT_URL: str = "http://localhost:6333"
     COLLECTION_NAME: str = "tasks"
 
@@ -15,6 +17,7 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", case_sensitive=True, extra="ignore",
+        
     )
 
 

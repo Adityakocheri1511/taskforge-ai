@@ -11,6 +11,15 @@ from alembic import context
 # access to the values within the .ini file in use.
 config = context.config
 
+import os
+
+# Prefer DATABASE_URL from the environment (containers, CI) and fall back to
+# alembic.ini for local runs. Without this, Alembic would use the ini's
+# hardcoded localhost, which points at the container itself.
+_db_url = os.getenv("DATABASE_URL")
+if _db_url:
+    config.set_main_option("sqlalchemy.url", _db_url)
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
