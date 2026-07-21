@@ -368,3 +368,42 @@ Today I felt like I could see all the 5 microservices working simultaneously.
 
 ### Tomorrow's preview (Day 14)
 - Deployment arc begins: production Dockerfiles + docker-compose for the full stack
+
+## Day 14 — July 21, 2026
+
+### Top concepts I learned today
+- Image = layered blueprint; container = running instance with a writable layer
+- Layer caching dictates instruction ORDER: deps before code, or every edit reinstalls
+- Multi-stage builds: compile in a throwaway stage, ship only artifacts
+  -> frontend went from ~1.1GB (with Node) to 76MB (nginx + static files)
+- python:3.11-slim over full (~1GB) or Alpine (musl breaks Python wheels)
+- Non-root user, .dockerignore, never bake secrets into layers (they're inspectable forever)
+- Service discovery: containers reach each other by SERVICE NAME, not localhost
+- depends_on only waits for START; pair with healthcheck + condition: service_healthy
+
+### The containers caught three defects my local setup was hiding
+1. alembic.ini had a hardcoded localhost URL — worked locally, unreachable in a container.
+   Fixed by reading DATABASE_URL from env with the ini as fallback (twelve-factor).
+2. email-validator was never declared in pyproject.toml — my venv had it transitively,
+   the clean container image did not.
+3. TypeScript errors that `vite dev` skips entirely — `npm run build` runs tsc and failed.
+
+That's the real argument for containerizing early: none of these would have surfaced
+until deployment day.
+
+### Also debugged
+- Docker Desktop's file-sharing cache served empty (2B) Dockerfiles despite real content
+  on disk; new inodes fixed it
+- `pip install .` failed because packages=["app"] but app/ isn't copied yet at that layer
+  — install dependencies only, from a generated requirements.txt
+- pydantic-settings couldn't parse a JSON list env var; dropped the override and used
+  the code default instead
+
+### Hardest part of today
+The hardest part of the day was to understand how Dockers works when it captures large files of all the services and installing packages into smaller size into one image. Due to this I got to know how containers are created and operated.
+
+### One thing I'm proud of
+Today I got an error while performing to push the code into prod in Docker where all the 8 terminals collapsed into one command — the whole system up with docker compose up.
+
+### Tomorrow's preview (Day 15)
+- Kubernetes: Deployments, Services, ConfigMaps/Secrets, and running the stack on k8s
