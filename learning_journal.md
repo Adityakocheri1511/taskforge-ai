@@ -407,3 +407,49 @@ Today I got an error while performing to push the code into prod in Docker where
 
 ### Tomorrow's preview (Day 15)
 - Kubernetes: Deployments, Services, ConfigMaps/Secrets, and running the stack on k8s
+
+## Day 15 — August 8, 2026
+
+### Top concepts I learned today
+- Orchestration vs Compose: k8s reconciles DESIRED STATE continuously — self-heals,
+  scales, rolls out, schedules across nodes; Compose just runs containers on one host
+- Pod (smallest unit, ephemeral) < Deployment (declares N replicas, recreates dead pods)
+  < Service (stable DNS + load-balances across pods by label selector)
+- Declarative model: you declare "3 should exist", the control plane enforces it forever
+- Labels + selectors are the glue — a selector matching nothing is the classic silent bug
+- Readiness (pull from rotation) vs liveness (restart) probes — mixing them causes outages
+- ConfigMap (non-secret config) vs Secret (credentials); env injected via *KeyRef
+- Migrations as a Job (run-once), NOT on startup — 2 replicas would race
+- Stateful (Postgres: PVC) vs stateless (auth/task/ai: plain Deployments)
+
+### What I got running on Kubernetes
+- Infra: Postgres (+PVC), Redis, Qdrant, RabbitMQ, Zookeeper — all Running
+- Services: auth ×2, task ×2, notification, ai-service — all Running with health probes
+- Migrations: auth + task ran as Jobs, both Completed
+- Verified real traffic: curl -> Service -> load-balanced pod -> {"status":"ok"}
+- Demonstrated self-healing: deleted auth pods, Deployment recreated them automatically
+
+### The Kafka call (worth remembering for interviews)
+- Self-hosted Kafka on Docker Desktop lost to a config + memory squeeze. Fixed the
+  Confluent listener config (KAFKA_LISTENERS + SECURITY_PROTOCOL_MAP + INTER_BROKER),
+  got it to start, then it hit the memory ceiling on the single-node cluster.
+- This is exactly WHY production runs managed Kafka (AWS MSK, Confluent Cloud).
+  "Stateless services on k8s + managed Kafka" is the correct architecture, not a fallback.
+- analytics + outbox-relay stayed in CrashLoopBackOff — correctly, because they depend
+  on Kafka. k8s patiently restarting them IS the system working as designed.
+
+### Also learned (the hard way)
+- Terminal mangles long heredoc pastes — saw a YAML file corrupt at line 51. Fix:
+  write files via a different path, or patch live with `kubectl set env` / `kubectl apply`.
+- `kubectl apply --dry-run=client` validates a manifest before touching the cluster.
+- `--previous` reads a crashed pod's logs; empty error logs often mean an OOM kill.
+
+### Hardest part of today
+- Hardest part of today was to move all the YAML files and make it run.
+
+### One thing I'm proud of
+- A 5-service system genuinely orchestrated on k8s, self-healing demonstrated live
+
+### Tomorrow's preview (Day 16)
+- Cloud deployment (managed Postgres/Kafka) OR CI/CD pipeline — the last infra piece
+- Then: resume polish and applications
