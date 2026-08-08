@@ -23,4 +23,4 @@ stringData:
   POSTGRES_PASSWORD: "taskforge_dev_password"
   RABBITMQ_USER: "taskforge"
   RABBITMQ_PASSWORD: "taskforge_dev_password"
-  JWT_SECRET_KEY: "93eef8f4ca76f1d44b969ccc7d3739977d5f036a673be5e205cf1b6e83d49f63"
+  JWT_SECRET_KEY: "7058124f8b53faf41168d44014df3c567a6106b52207ae42728ec950c3e2b187"
